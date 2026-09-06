@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
@@ -5,6 +6,7 @@ import {
   Home, LogOut, Menu, PackageCheck, Phone, User, X, MapPin,
   ChevronRight, ShieldCheck, Sprout
 } from 'lucide-react';
+import ProcurementDashboard from "./pages/procurement/ProcurementDashboard";
 import './styles.css';
 
 const initialBooking = {
@@ -69,6 +71,9 @@ function App() {
           <NavItem icon={<PackageCheck size={19} />} label="Procurement" active={page === 'procurement'} onClick={() => {setPage('procurement');setSidebarOpen(false)}} />
           <NavItem icon={<CreditCard size={19} />} label="Payment" active={page === 'payment'} onClick={() => {setPage('payment');setSidebarOpen(false)}} />
           <NavItem icon={<Bell size={19} />} label="Notifications" badge={unreadCount} active={page === 'notifications'} onClick={() => {markNotificationsRead();setPage('notifications');setSidebarOpen(false)}} />
+          <NavItem icon={<PackageCheck size={19} />} label="Procurement Centre"
+    active={page === 'procurement-dashboard'}onClick={() => {setPage('procurement-dashboard');setSidebarOpen(false);}}
+  />
         </nav>
         <div className="sidebar-bottom">
           <div className="profile-mini"><div className="avatar">CS</div><div><strong>Chandini Siri</strong><span>Farmer ID: FM-20481</span></div></div>
@@ -92,6 +97,7 @@ function App() {
           {page === 'procurement' && <ProcurementPage booking={booking} />}
           {page === 'payment' && <PaymentPage booking={booking} />}
           {page === 'notifications' && <NotificationsPage notifications={notifications} />}
+          {page === 'procurement-dashboard' && <ProcurementDashboard />}
         </section>
       </main>
 
