@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   CalendarDays,
   CheckCircle2,
@@ -8,6 +8,7 @@ import {
   ChevronRight,
   MapPin,
   Sprout,
+  Phone,
 } from "lucide-react";
 
 const todayBookings = [
@@ -46,6 +47,42 @@ const todayBookings = [
 ];
 
 function ProcurementDashboard() {
+  const [centers, setCenters] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchCenters = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch(
+          "http://localhost:5000/api/procurement-centers"
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch procurement centres");
+        }
+
+        const data = await response.json();
+
+        if (!data.success) {
+          throw new Error(data.message || "Failed to fetch procurement centres");
+        }
+
+        setCenters(data.centers || []);
+      } catch (err) {
+        console.error("Procurement centres API error:", err);
+        setError(err.message || "Unable to load procurement centres");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCenters();
+  }, []);
+
   const completed = todayBookings.filter(
     (booking) => booking.status === "Completed"
   ).length;
@@ -57,6 +94,12 @@ function ProcurementDashboard() {
   const waiting = todayBookings.filter(
     (booking) => booking.status === "Waiting"
   ).length;
+
+  const activeCenters = centers.filter(
+    (center) => center.status === "active"
+  );
+
+  const currentCenter = activeCenters[0];
 
   return (
     <div>
@@ -74,11 +117,95 @@ function ProcurementDashboard() {
         </div>
 
         <div>
-          <div className="process-badge">
-            <MapPin size={17} />
-            Mandal Procurement Centre
-          </div>
+          {loading ? (
+            <div className="process-badge">
+              <MapPin size={17} />
+              Loading centre...
+            </div>
+          ) : error ? (
+            <div className="process-badge">
+              <MapPin size={17} />
+              Centre unavailable
+            </div>
+          ) : currentCenter ? (
+            <div className="process-badge">
+              <MapPin size={17} />
+              {currentCenter.name}
+            </div>
+          ) : (
+            <div className="process-badge">
+              <MapPin size={17} />
+              No active centre
+            </div>
+          )}
         </div>
+      </div>
+
+      {/* Centre Information */}
+      <div className="page-card">
+        <div className="page-intro">
+          <div>
+            <h3>Centre information</h3>
+
+            {loading && (
+              <p className="muted">
+                Loading procurement centre information...
+              </p>
+            )}
+
+            {error && (
+              <p className="muted">
+                Unable to load centre information: {error}
+              </p>
+            )}
+
+            {!loading && !error && !currentCenter && (
+              <p className="muted">
+                No active procurement centre is available.
+              </p>
+            )}
+
+            {!loading && !error && currentCenter && (
+              <p className="muted">
+                Current active procurement centre details.
+              </p>
+            )}
+          </div>
+
+          {!loading && !error && currentCenter && (
+            <span className="status-chip completed">
+              {currentCenter.status}
+            </span>
+          )}
+        </div>
+
+        {!loading && !error && currentCenter && (
+          <div className="procurement-grid">
+            <InfoRow
+              label="Centre"
+              value={currentCenter.name}
+              icon={<MapPin size={17} />}
+            />
+
+            <InfoRow
+              label="Location"
+              value={currentCenter.location}
+              icon={<MapPin size={17} />}
+            />
+
+            <InfoRow
+              label="District"
+              value={`${currentCenter.district}, ${currentCenter.state}`}
+              icon={<MapPin size={17} />}
+            />
+
+            <InfoRow
+              label="Contact"
+              value={currentCenter.contact_number || "Not available"}
+              icon={<Phone size={17} />}
+            />
+          </div>
+        )}
       </div>
 
       {/* Statistics */}
@@ -178,9 +305,7 @@ function ProcurementDashboard() {
           .filter((booking) => booking.status !== "Completed")
           .map((booking) => (
             <div className="schedule-row" key={booking.token}>
-              <div className="schedule-token">
-                #{booking.token}
-              </div>
+              <div className="schedule-token">#{booking.token}</div>
 
               <div className="schedule-info">
                 <strong>{booking.farmer}</strong>
@@ -228,4 +353,18 @@ function StatusBadge({ status }) {
   );
 }
 
+function InfoRow({ label, value, icon }) {
+  return (
+    <div className="info-row">
+      <div className="info-left">
+        {icon}
+        <span>{label}</span>
+      </div>
+
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
 export default ProcurementDashboard;
+
