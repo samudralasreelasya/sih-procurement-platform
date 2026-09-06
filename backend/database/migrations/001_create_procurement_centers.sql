@@ -1,19 +1,14 @@
 CREATE TABLE procurement_centers (
-    id BIGSERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
 
-    name VARCHAR(150) NOT NULL,
-    address TEXT NOT NULL,
-    village VARCHAR(100) NOT NULL,
-    district VARCHAR(100) NOT NULL,
-    state VARCHAR(100) NOT NULL,
+    name VARCHAR(150),
+    location VARCHAR(255),
+    district VARCHAR(100),
+    state VARCHAR(100),
+    contact_number VARCHAR(15),
 
-    capacity_per_day INTEGER NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'active',
 
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT procurement_center_capacity_check
-        CHECK (capacity_per_day > 0)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
